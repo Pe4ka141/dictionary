@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dictionary</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <style>
+        body {
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Dictionary</h1>
+
+        <!-- Add Word Form -->
+        <form id="add-word-form">
+            <fieldset>
+                <legend>Add a New Word</legend>
+                <label for="word">Word:</label>
+                <input type="text" id="word" name="word" placeholder="Enter word" required>
+                
+                <label for="translation">Translation:</label>
+                <input type="text" id="translation" name="translation" placeholder="Enter translation" required>
+                
+                <button type="submit">Add Word</button>
+            </fieldset>
+        </form>
+
+        <div id="add-response" style="margin-top: 20px;"></div>
+
+        <!-- Search Word Form -->
+        <form id="search-word-form" style="margin-top: 30px;">
+            <fieldset>
+                <legend>Search for a Word</legend>
+                <label for="search">Word:</label>
+                <input type="text" id="search" name="word" placeholder="Enter word to search" required>
+                
+                <button type="submit">Search</button>
+            </fieldset>
+        </form>
+
+        <div id="search-response" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        // Handle Add Word Form Submission
+        document.getElementById('add-word-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const word = document.getElementById('word').value;
+            const translation = document.getElementById('translation').value;
+
+            const response = await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `word=${encodeURIComponent(word)}&translation=${encodeURIComponent(translation)}`
+            });
+
+            const result = await response.json();
+            document.getElementById('add-response').textContent = result.message || result.error;
+        });
+
+        // Handle Search Word Form Submission
+        document.getElementById('search-word-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const word = document.getElementById('search').value;
+
+            const response = await fetch(`/search?word=${encodeURIComponent(word)}`);
+            const result = await response.json();
+
+            if (result.error) {
+                document.getElementById('search-response').textContent = result.error;
+            } else {
+                document.getElementById('search-response').innerHTML = `
+                    <p><strong>Word:</strong> ${result.word}</p>
+                    <p><strong>Translation:</strong> ${result.translation}</p>
+                    <p><strong>Date Added:</strong> ${new Date(result.date_added).toLocaleString()}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
